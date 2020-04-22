@@ -8,19 +8,21 @@ import { StyleSheet, View, Text, FlatList, Alert,
 import {Icon, Fab } from 'native-base';
 
 import CustomRow from './CustomRow';
-
+import { connect } from 'react-redux';
+import * as contactAction from '../actions/index';
 	
-export default class HomeScreen extends React.Component {
+class HomeScreen extends React.Component {
 	constructor(props) {
 	 super(props);
 	 this.state = {		 
 	   loading: false,
-	   dataSource:[],
+	   contacts:[],
 	   
 	  };
 	}
 	
 	componentDidMount(){
+		
 			
 	}
 	
@@ -31,20 +33,21 @@ export default class HomeScreen extends React.Component {
 	
   //HomeScreen Component
   render() {
-
-	const { dataSource} = this.state;
+	console.log("===>"+JSON.stringify(this.props.contacts.contactList))
+	
 	if(this.state.loading){
 		return( 
 		<View style={styles.loader}> 
 	
 		<ActivityIndicator size="large" color="#0c9"/>
 		</View>
-	)} else	if(this.state.dataSource == null || this.state.dataSource.length <=0){
+	)} else	if(this.props.contacts.contactList.length <= 0){
 		return( 
 			<View style={styles.loader}> 
 		
 			<Text style={styles.message}> No Contacts Available, Please create contact from below + button</Text>
 				<View style={{ flex: 1 }}>
+				
 				<Fab
 					direction="up"
 					containerStyle={{ }}
@@ -62,20 +65,19 @@ export default class HomeScreen extends React.Component {
 		  <View style={styles.MainContainer}>
 		  
 			 <FlatList
-				data={this.state.dataSource}
-				
+				data={this.props.contacts.contactList}							
 				 renderItem={({ item }) => <CustomRow
 						name={item.name}
 						mobNumber={item.mobNumber}
 						photo={item.photo}
 						isFavorite={item.isFavorite}
 						item = {item}
-						navigation={this.props.navigation}
+						navigation={this.props.navigation}						
 					 />}
 				
 				keyExtractor={item => item.id}
 			  />
-					
+				
 			<View style={{ flex: 1 }}>
 				<Fab
 					direction="up"
@@ -93,8 +95,7 @@ export default class HomeScreen extends React.Component {
 		);
 	}
   }
- 
-	
+
   FlatListItemSeparator = () => {
 		return (
 		  <View style={{
@@ -107,6 +108,20 @@ export default class HomeScreen extends React.Component {
 	}
 	
 }
+
+const mapStateToProps = (state, ownProps) => {
+  return {
+    contacts: state.contacts
+  }
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    createContact: contact => dispatch(contactAction.createContact(contact))
+  }
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);
 
 const styles = StyleSheet.create({
   MainContainer: {

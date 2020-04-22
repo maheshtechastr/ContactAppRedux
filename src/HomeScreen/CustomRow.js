@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
         marginTop: 3,
         marginBottom: 3,
         borderRadius: 5,
-        backgroundColor: '#FFF',
+        backgroundColor: '#FF0',
         elevation: 2,
     },
     title: {

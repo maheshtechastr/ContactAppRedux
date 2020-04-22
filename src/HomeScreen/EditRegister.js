@@ -6,6 +6,7 @@ import {
 	Button,
 	TextInput,
 	StyleSheet,
+	TouchableOpacity,
 	TouchableHighlight,
 	Alert,
 	Image,
@@ -13,9 +14,13 @@ import {
 } from 'react-native'
 
 import ImagePicker from '../Image/appImagePicker';
+import {Icon } from 'native-base';
+
+import { connect } from 'react-redux';
+import * as contactAction from '../actions/index';
 
 
-export default class EditRegister extends React.Component {
+class EditRegister extends React.Component {
 	
 	state = {
 		id:'',
@@ -30,23 +35,19 @@ export default class EditRegister extends React.Component {
 		const {params} = route
 		//console.log("navigationOptions route.params.isFavorite=="+route.params.isFavorite)
 		return {
-			title: route.params.title,
-			headerTitleStyle : {
-				alignItems:'center',
-				justifyContent:'center'
-			},
+			title: route.params.title,			
+			headerTitleAlign: 'center',
 			headerStyle:{
-				backgroundColor:'white',
-				
+				backgroundColor:'white',				
 			},
 			headerRight: () => (		
-				<TouchableHighlight onPress={()=> params.handleSave()}>
+				<TouchableOpacity onPress={()=> params.handleSave()}>
 					<Image              
 					source={route.params.isFavorite?
 					require('../Image/favoriteActive.png') : require('../Image/favoriteInActive.png')}
 					style={styles.photo}
 					/>			
-				</TouchableHighlight>
+				</TouchableOpacity>
 			)
 		};
 	};
@@ -108,6 +109,7 @@ export default class EditRegister extends React.Component {
 					<ImagePicker parentCallback = {this.callbackFunction}
 					source={this.state.photo}/>
 					<Text>{this.state.photo}</Text>
+					
 				</View>
 
 				<View style={styles.middleSection}>
@@ -164,22 +166,38 @@ export default class EditRegister extends React.Component {
 		const { name, phNumber, mobNumber, isFavorite, photo,
 				 id, isNewContact} = this.state
 		console.log(id+"==FAVORITES=this==>"+isFavorite)
+		
+		if(!name)
+			return
+		if(!mobNumber)
+			return
+		
 		var inverted = !isFavorite;
 		this.props.navigation.setParams({
 			 isFavorite: inverted
 		   });
 		
 		console.log(isFavorite+"==FAVORITES=this==>"+inverted)
-		this.setState({isFavorite:!isFavorite});
+		this.setState({isFavorite:inverted});
 		console.log("Favorites=CC==>"+isFavorite);
 		
+		let contact = {
+			  name,
+			  phNumber,
+			  mobNumber,
+			  isFavorite:inverted,
+			  photo,
+			  id,
+			}
+			console.log("FavoritesCon : "+JSON.stringify(contact));
+			this.props.favoriteContact(contact);
 	}	
 	
   	removeContact = async() => {
 		
 		const{id} = this.state
 		console.log("DELETE=this==>"+id)		
-			
+		this.props.deleteContact(id);
 		this.props.navigation.goBack()
 	}	
 	
@@ -197,12 +215,45 @@ export default class EditRegister extends React.Component {
 		if(!name || !mobNumber){
 			return; 
 		}
-		
+		console.log("Name : "+name);
+		console.log("Mobile : "+mobNumber);
+		console.log("PhoneNumber : "+phNumber);
+		console.log("id : "+newId);
+		let contact = {
+			name,
+			phNumber,
+			mobNumber,
+			isFavorite,
+			photo,
+			id:newId,
+		}
+		console.log("Contac : "+JSON.stringify(contact));
+		if(isNewContact)
+			this.props.createContact(contact);
+		else
+			this.props.updateContact(contact);
 		
 		this.props.navigation.goBack();  
 	}
 	 	
 }
+
+const mapStateToProps = (state, ownProps) => {
+  return {
+    contacts: state.contacts
+  }
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    createContact: contact => dispatch(contactAction.createContact(contact)),
+    updateContact: contact => dispatch(contactAction.updateContact(contact)),
+    favoriteContact: contact => dispatch(contactAction.favoriteContact(contact)),
+    deleteContact: contact => dispatch(contactAction.deleteContact(contact)),
+  }
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(EditRegister);
 
 const styles = StyleSheet.create({
   input: {

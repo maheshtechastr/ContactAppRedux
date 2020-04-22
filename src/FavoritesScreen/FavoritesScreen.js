@@ -6,23 +6,31 @@ import { StyleSheet, View, Text, FlatList, Alert,
 
 import CustomRow from '../HomeScreen/CustomRow';
 
-export default class FavoritesScreen extends React.Component {
+import { connect } from 'react-redux';
+import * as contactAction from '../actions/index';
+
+class FavoritesScreen extends React.Component {
 	constructor(props) {
 	 super(props);
 	 this.state = {		 
 	   loading: false,
-	   dataSource:[],	   
+	   //dataSource:[],	   
 	  };
 	}
 	
 	componentDidMount(){
 		
+		this._unsubscribe = this.props.navigation.addListener('focus', () => {
+			  // do something
+			  console.info('Refresghhhhhhhh');
+			  this.props.allFavoriteContact();
+		});
 	}
 	
 	
 	
 	componentWillUnmount() {
-
+		 this._unsubscribe();
 	}
 	
   render() {
@@ -34,11 +42,12 @@ export default class FavoritesScreen extends React.Component {
 	
 		<ActivityIndicator size="large" color="#0c9"/>
 		</View>
-	)} else	if(this.state.dataSource == null || this.state.dataSource.length <=0){
+	)} else	if(this.props.contacts.favoriteList.length <=0){
+		
 		return( 
 			<View style={styles.loader}> 
 				
-				<Text style={styles.message}> No Contacts Available, Please create contact from below + button</Text>
+				<Text style={styles.message}> No Favorites Contacts Available, Please add contact from detail page</Text>
 			
 			</View>)
 	} else {		
@@ -46,7 +55,7 @@ export default class FavoritesScreen extends React.Component {
 		  <View style={styles.MainContainer}>
 		   
 			 <FlatList
-				data={this.state.dataSource}
+				data={this.props.contacts.favoriteList}
 				
 				 renderItem={({ item }) => <CustomRow
 						name={item.name}
@@ -79,6 +88,22 @@ export default class FavoritesScreen extends React.Component {
 	}
 	
 }
+
+const mapStateToProps = (state, ownProps) => {
+	console.info('mapStateToProps=='+JSON.stringify(ownProps))
+	console.info('mapStateToProps=='+JSON.stringify(state))
+  return {
+    contacts: state.contacts
+  }
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    allFavoriteContact: () => dispatch(contactAction.allFavoriteContact())
+  }
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(FavoritesScreen);
 
 const styles = StyleSheet.create({
   MainContainer: {
